@@ -28,7 +28,8 @@ class AddShallowSizeMethodTest {
                 Named.of(
                     "multipleFieldsInConstructor",
                     Byte.SIZE_BYTES + Short.SIZE_BYTES + Int.SIZE_BYTES + Long.SIZE_BYTES
-                ), MultipleFieldsInConstructor(1, 2, 3, 4).shallowSize()
+                ),
+                MultipleFieldsInConstructor(1, 2, 3, 4).shallowSize()
             ),
             Arguments.of(
                 Named.of("nullablePrimitives", 4 * DEFAULT_SIZE),

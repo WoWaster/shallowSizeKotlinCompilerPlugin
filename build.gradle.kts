@@ -20,7 +20,7 @@ dependencies {
 }
 
 detekt {
-    source = files("shallowSizePlugin/src/main/kotlin")
+    source = files("shallowSizePlugin/src/main/kotlin", "shallowSizePluginTest/src/test/kotlin")
     autoCorrect = true
 }
 
