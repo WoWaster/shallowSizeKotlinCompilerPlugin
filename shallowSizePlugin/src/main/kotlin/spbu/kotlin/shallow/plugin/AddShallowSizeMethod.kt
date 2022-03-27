@@ -22,12 +22,15 @@ import org.jetbrains.kotlin.ir.types.isUByte
 import org.jetbrains.kotlin.ir.types.isUInt
 import org.jetbrains.kotlin.ir.types.isULong
 import org.jetbrains.kotlin.ir.types.isUShort
-import org.jetbrains.kotlin.ir.util.fields
+import org.jetbrains.kotlin.ir.types.isUnit
 import org.jetbrains.kotlin.ir.util.functions
 import org.jetbrains.kotlin.ir.util.properties
 
 const val DEFAULT_SIZE = 8
+const val UNIT_SIZE = 8
+const val BOOLEAN_SIZE = 1
 
+@Suppress("complexity.ComplexMethod")
 fun IrType.byteSize(): Int = when {
     this.isChar() -> Char.SIZE_BYTES
     this.isByte() -> Byte.SIZE_BYTES
@@ -40,7 +43,8 @@ fun IrType.byteSize(): Int = when {
     this.isULong() -> ULong.SIZE_BYTES
     this.isFloat() -> Float.SIZE_BYTES
     this.isDouble() -> Double.SIZE_BYTES
-    this.isBoolean() -> 1
+    this.isBoolean() -> BOOLEAN_SIZE
+    this.isUnit() -> UNIT_SIZE
     else -> DEFAULT_SIZE
 }
 
@@ -53,17 +57,18 @@ val Meta.GenerateShallowSize: CliPlugin
                     newDeclaration =
                     """|$`@annotations` $modality $visibility $kind $name $`(typeParameters)` $`(params)` $superTypes {
                        |    $body
-                       |    fun shallowSize(): Int = TODO()
+                       |    fun shallowSize(): Int = TODO("Body will be replaced at compile time.")
                        |}""".trimMargin().`class`
                 )
             },
             irClass { clazz ->
                 if (clazz.isData) {
-                    val f = clazz.functions.find { it.name.asString() == "shallowSize" }
+                    val shallowSizeFunction =
+                        clazz.functions.find { it.name.asString() == "shallowSize" && it.valueParameters.isEmpty() }
+                            ?: throw NoSuchElementException("shallowSize() wasn't added to data class")
                     val size = clazz.properties.sumOf { it.backingField?.type?.byteSize() ?: 0 }
-                    println(clazz.fields)
-                    DeclarationIrBuilder(pluginContext, f!!.symbol).irBlockBody {
-                        f.body = irBlockBody {
+                    DeclarationIrBuilder(pluginContext, shallowSizeFunction.symbol).irBlockBody {
+                        shallowSizeFunction.body = irBlockBody {
                             +irReturn(
                                 irInt(size)
                             )
