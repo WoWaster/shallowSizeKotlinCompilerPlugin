@@ -1,10 +1,15 @@
 name: Kotlin CI
-on: [push, pull_request]
+on: [ push, pull_request ]
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '11'
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
@@ -17,3 +22,15 @@ jobs:
 
       - name: Run detekt
         run: ./gradlew detekt
+
+      - name: Upload detekt report
+        run: actions/upload-artifact@v3
+        with:
+          name: detekt report
+          path: build/reports/detekt/detekt.html
+
+      - name: Upload Junit report
+        run: actions/upload-artifact@v3
+        with:
+          name: junit report
+          path: shallowSizePluginTest/build/reports/tests/test/
