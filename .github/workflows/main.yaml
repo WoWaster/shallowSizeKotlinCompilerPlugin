@@ -24,13 +24,13 @@ jobs:
         run: ./gradlew detekt
 
       - name: Upload detekt report
-        run: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
           name: detekt report
           path: build/reports/detekt/detekt.html
 
       - name: Upload Junit report
-        run: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
           name: junit report
           path: shallowSizePluginTest/build/reports/tests/test/
